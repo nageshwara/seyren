@@ -53,7 +53,6 @@ public class SeyrenConfig {
     private final String twilioAuthToken;
     private final String twilioPhoneNumber;
     private final String hipChatBaseUrl;
-    private final String hipChatApiVersion;
     private final String hipChatAuthToken;
     private final String hipChatUsername;
     private final String hubotUrl;
@@ -82,6 +81,7 @@ public class SeyrenConfig {
     private final String victorOpsRestAPIEndpoint;
     private final String emailTemplateFileName;
     private final int noOfThreads;
+    private final String httpNotificationUrl;
     public SeyrenConfig() {
         
         // Base
@@ -101,7 +101,11 @@ public class SeyrenConfig {
         this.graphiteConnectionRequestTimeout = Integer.parseInt(configOrDefault("GRAPHITE_CONNECTION_REQUEST_TIMEOUT", "0"));
         this.graphiteConnectTimeout = Integer.parseInt(configOrDefault("GRAPHITE_CONNECT_TIMEOUT", "0"));
         this.graphiteSocketTimeout = Integer.parseInt(configOrDefault("GRAPHITE_SOCKET_TIMEOUT", "0"));
-        
+
+        // HTTP
+
+        this.httpNotificationUrl = configOrDefault("HTTP_NOTIFICATION_URL", "");
+
         // SMTP
         this.smtpFrom = configOrDefault(list("SMTP_FROM", "SEYREN_FROM_EMAIL"), "alert@seyren");
         this.smtpUsername = configOrDefault("SMTP_USERNAME", "");
@@ -112,7 +116,6 @@ public class SeyrenConfig {
         
         // HipChat
         this.hipChatBaseUrl = configOrDefault(list("HIPCHAT_BASEURL", "HIPCHAT_BASE_URL"), "https://api.hipchat.com");
-        this.hipChatApiVersion = configOrDefault(list("HIPCHAT_APIVERSION", "HIPCHAT_API_VERSION"), "1");
         this.hipChatAuthToken = configOrDefault(list("HIPCHAT_AUTHTOKEN", "HIPCHAT_AUTH_TOKEN"), "");
         this.hipChatUsername = configOrDefault(list("HIPCHAT_USERNAME", "HIPCHAT_USER_NAME"), "Seyren Alert");
         
@@ -205,11 +208,6 @@ public class SeyrenConfig {
     @JsonIgnore
     public String getHipChatBaseUrl() {
         return hipChatBaseUrl;
-    }
-
-    @JsonIgnore
-    public String getHipChatApiVersion() {
-        return hipChatApiVersion;
     }
 
     @JsonIgnore
@@ -408,6 +406,11 @@ public class SeyrenConfig {
     }
 
     @JsonIgnore
+    public String getHttpNotificationUrl() {
+        return httpNotificationUrl;
+    }
+
+    @JsonIgnore
     public String getEmailTemplateFileName() { return emailTemplateFileName; }
 
     @JsonIgnore
@@ -468,6 +471,4 @@ public class SeyrenConfig {
         
         return baseParts;
     }
-
-
 }
