@@ -74,6 +74,9 @@ The following options can be supplied as system properties or environment variab
 * `SMTP_PASSWORD` - The smtp server password if authenticated SMTP is used. Default: ``
 * `SMTP_PROTOCOL` - The smtp server protocol if authenticated SMTP is used. Default: `smtp`
 
+##### [HTTP]
+* `HTTP_NOTIFICATION_URL` - The url for a resource that contains a POST HTTP Method. Default: ``
+
 ##### [Flowdock](https://www.flowdock.com)
 
 Use a [Flow API token](https://www.flowdock.com/account/tokens) as Target when adding a new subscription.
@@ -127,6 +130,9 @@ The target for a Slack subscription will be the channel name (including the `#`,
 * `TWILIO_AUTH_TOKEN` - The Twilio Auth Token. Default ``
 * `TWILIO_PHONE_NUMBER` - The Twilio phone number to use to send SMS. Default ``
 * `TWILIO_URL` - The Twilio API URL. Mostly useful for testing. Default `https://api.twilio.com/2010-04-01/Accounts`
+
+##### [Victorops](https://www.victorops.com/)
+* `VICTOROPS_REST_ENDPOINT` - The REST Endpoint given by Victorops. See [REST Integration]( http://victorops.force.com/knowledgebase/articles/Integration/Alert-Ingestion-API-Documentation/) Default ``
 
 ##Seyren API
 
