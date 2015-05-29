@@ -51,6 +51,7 @@ public class Check {
     private AlertType state;
     private DateTime lastCheck;
     private List<Subscription> subscriptions = new ArrayList<Subscription>();
+    private int alertThreshold;
     
     public String getId() {
         return id;
@@ -238,5 +239,13 @@ public class Check {
         setSubscriptions(subscriptions);
         return this;
     }
-    
+
+    public int getAlertThreshold() {
+        return alertThreshold;
+    }
+
+    public Check withAlertThreshold(int alertThreshold) {
+        this.alertThreshold = alertThreshold;
+        return this;
+    }
 }

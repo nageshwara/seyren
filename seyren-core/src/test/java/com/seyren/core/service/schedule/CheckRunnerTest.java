@@ -23,17 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.seyren.core.domain.*;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.common.base.Optional;
-import com.seyren.core.domain.Alert;
-import com.seyren.core.domain.AlertType;
-import com.seyren.core.domain.Check;
-import com.seyren.core.domain.Subscription;
-import com.seyren.core.domain.SubscriptionType;
+import com.google.common.collect.Lists;
+
 import com.seyren.core.exception.NotificationFailedException;
 import com.seyren.core.service.checker.TargetChecker;
 import com.seyren.core.service.checker.ValueChecker;
@@ -84,7 +82,7 @@ public class CheckRunnerTest {
         when(mockTargetChecker.check(mockCheck)).thenReturn(new HashMap<String, Optional<BigDecimal>>());
         when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.UNKNOWN), any(DateTime.class))).thenReturn(mockCheck);
         checkRunner.run();
-        verify(mockChecksStore).updateStateAndLastCheck(eq("id"),  eq(AlertType.UNKNOWN), any(DateTime.class));
+        verify(mockChecksStore).updateStateAndLastCheck(eq("id"), eq(AlertType.UNKNOWN), any(DateTime.class));
     }
     
     @Test
@@ -295,7 +293,84 @@ public class CheckRunnerTest {
         verify(mockAlertsStore).createAlert(eq("id"), any(Alert.class));
         verify(mockNotificationService).sendNotification(eq(mockCheck), eq(mockSubscription), any(List.class));
     }
-    
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void changeOfStateWithLessThanThresholdWhichShouldNotifyAndCanHandleSendsNotification() throws Exception {
+        BigDecimal value = BigDecimal.ONE;
+        BigDecimal warn = BigDecimal.valueOf(2);
+        BigDecimal error = BigDecimal.valueOf(3);
+
+        Subscription mockSubscription = mock(Subscription.class);
+        when(mockSubscription.getType()).thenReturn(SubscriptionType.EMAIL);
+
+        when(mockCheck.getId()).thenReturn("id");
+        when(mockCheck.isEnabled()).thenReturn(true);
+        when(mockCheck.getWarn()).thenReturn(warn);
+        when(mockCheck.getError()).thenReturn(error);
+        when(mockCheck.getSubscriptions()).thenReturn(Arrays.asList(mockSubscription));
+        when(mockCheck.getAlertThreshold()).thenReturn(1);
+
+        Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
+        targetValues.put("target", Optional.of(value));
+        when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
+        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.ERROR);
+
+        Alert alert = new Alert();
+
+        when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
+        when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.ERROR), any(DateTime.class))).thenReturn(mockCheck);
+        when(mockSubscription.shouldNotify(any(DateTime.class), eq(AlertType.ERROR))).thenReturn(true);
+        when(mockNotificationService.canHandle(SubscriptionType.EMAIL)).thenReturn(true);
+
+        checkRunner.run();
+
+        verify(mockAlertsStore).createAlert(eq("id"), any(Alert.class));
+        verify(mockNotificationService, never()).sendNotification(eq(mockCheck), eq(mockSubscription), any(List.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void changeOfStateWithMoreThanThresholdWhichShouldNotifyAndCanHandleSendsNotification() throws Exception {
+        BigDecimal value = BigDecimal.ONE;
+        BigDecimal warn = BigDecimal.valueOf(2);
+        BigDecimal error = BigDecimal.valueOf(3);
+
+        Subscription mockSubscription = mock(Subscription.class);
+        when(mockSubscription.getType()).thenReturn(SubscriptionType.EMAIL);
+
+        when(mockCheck.getId()).thenReturn("id");
+        when(mockCheck.isEnabled()).thenReturn(true);
+        when(mockCheck.getWarn()).thenReturn(warn);
+        when(mockCheck.getError()).thenReturn(error);
+        when(mockCheck.getSubscriptions()).thenReturn(Arrays.asList(mockSubscription));
+        when(mockCheck.getAlertThreshold()).thenReturn(1);
+
+        Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
+        targetValues.put("target", Optional.of(value));
+        when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
+        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.ERROR);
+
+        Alert alert = new Alert();
+        Alert alert2 = new Alert();
+
+        SeyrenResponse<Alert> alertSeyrenResponse = new SeyrenResponse<Alert>();
+        alertSeyrenResponse.setValues(Lists.newArrayList(alert, alert2));
+
+        when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
+        when(mockAlertsStore.getAlerts(eq("id"), any(DateTime.class))).thenReturn(alertSeyrenResponse);
+        when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.ERROR), any(DateTime.class))).thenReturn(mockCheck);
+        when(mockSubscription.shouldNotify(any(DateTime.class), eq(AlertType.ERROR))).thenReturn(true);
+        when(mockNotificationService.canHandle(SubscriptionType.EMAIL)).thenReturn(true);
+
+        checkRunner.run();
+
+        verify(mockAlertsStore).createAlert(eq("id"), any(Alert.class));
+        verify(mockNotificationService).sendNotification(eq(mockCheck), eq(mockSubscription), any(List.class));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void exceptionWhileSendingNotificationIsHandled() throws Exception {

@@ -25,6 +25,8 @@ public interface AlertsStore {
     SeyrenResponse<Alert> getAlerts(String checkId, int start, int items);
     
     SeyrenResponse<Alert> getAlerts(int start, int items);
+
+    SeyrenResponse<Alert> getAlerts(String checkId, DateTime after);
     
     void deleteAlerts(String checkId, DateTime before);
     

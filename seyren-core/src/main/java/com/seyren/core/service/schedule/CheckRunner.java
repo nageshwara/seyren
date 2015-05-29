@@ -15,19 +15,18 @@ package com.seyren.core.service.schedule;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.seyren.core.domain.*;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
-import com.seyren.core.domain.Alert;
-import com.seyren.core.domain.AlertType;
-import com.seyren.core.domain.Check;
-import com.seyren.core.domain.Subscription;
+
 import com.seyren.core.service.checker.TargetChecker;
 import com.seyren.core.service.checker.ValueChecker;
 import com.seyren.core.service.notification.NotificationService;
@@ -128,12 +127,16 @@ public class CheckRunner implements Runnable {
             if (interestingAlerts.isEmpty()) {
                 return;
             }
-            
+
+            if (!shouldSendoutNotification()) {
+                return;
+            }
+
             for (Subscription subscription : updatedCheck.getSubscriptions()) {
                 if (!subscription.shouldNotify(now, worstState)) {
                     continue;
                 }
-                
+
                 for (NotificationService notificationService : notificationServices) {
                     if (notificationService.canHandle(subscription.getType())) {
                         try {
@@ -144,10 +147,43 @@ public class CheckRunner implements Runnable {
                     }
                 }
             }
-            
+
         } catch (Exception e) {
             LOGGER.warn("{} failed", check.getName(), e);
         }
+    }
+
+    private boolean shouldSendoutNotification() {
+
+        if (check.getAlertThreshold() == 0) {
+            return true;
+        }
+
+        // Fetch previous x minutes worth the alerts
+        SeyrenResponse<Alert> recentAlertsResult = alertsStore.getAlerts(check.getId(),
+                DateTime.now().minusMinutes(check.getAlertThreshold() + 1));
+        List<Alert> recentAlerts = recentAlertsResult.getValues();
+        Map<String, Integer> entityToConsecutiveFailureCount = new HashMap<String, Integer>();
+        for(Alert alert : recentAlerts) {
+            if (alert.getToType() == AlertType.OK) {
+                entityToConsecutiveFailureCount.remove(alert.getTarget());
+            } else {
+                int count = 1;
+                if (entityToConsecutiveFailureCount.containsKey(alert.getTarget())) {
+                    count = entityToConsecutiveFailureCount.get(alert.getTarget()) + 1;
+                }
+                entityToConsecutiveFailureCount.put(alert.getTarget(), count);
+            }
+        }
+
+        boolean crossedThreshold = false;
+        for (Map.Entry<String, Integer> entry : entityToConsecutiveFailureCount.entrySet()) {
+            if (entry.getValue() >= check.getAlertThreshold()) {
+                crossedThreshold = true;
+            }
+        }
+
+        return crossedThreshold;
     }
     
     private boolean isStillOk(AlertType last, AlertType current) {

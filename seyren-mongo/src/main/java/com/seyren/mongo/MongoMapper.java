@@ -48,6 +48,7 @@ public class MongoMapper {
         boolean enabled = getBoolean(dbo, "enabled");
         boolean live = getOptionalBoolean(dbo, "live", false);
         boolean allowNoData = getOptionalBoolean(dbo, "allowNoData", false);
+        int alertThreshold = getOptionalInteger(dbo, "alertThreshold", 0);
         AlertType state = AlertType.valueOf(getString(dbo, "state"));
         DateTime lastCheck = getDateTime(dbo, "lastCheck");
         List<Subscription> subscriptions = new ArrayList<Subscription>();
@@ -64,6 +65,7 @@ public class MongoMapper {
                 .withUntil(until)
                 .withWarn(warn)
                 .withError(error)
+                .withAlertThreshold(alertThreshold)
                 .withEnabled(enabled)
                 .withLive(live)
                 .withAllowNoData(allowNoData)
@@ -153,6 +155,7 @@ public class MongoMapper {
         map.put("target", check.getTarget());
         map.put("from", check.getFrom());
         map.put("until", check.getUntil());
+        map.put("alertThreshold", check.getAlertThreshold());
         if (check.getWarn() != null) {
             map.put("warn", check.getWarn().toPlainString());
         }
@@ -274,6 +277,15 @@ public class MongoMapper {
     private Integer getInteger(DBObject dbo, String key) {
         return (Integer) dbo.get(key);
     }
+
+    private Integer getOptionalInteger(DBObject dbo, String key, Integer defaultValue) {
+        Object value = dbo.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return (Integer) value;
+    }
+
     
     private BasicDBList getBasicDBList(DBObject dbo, String key) {
         BasicDBList result = (BasicDBList) dbo.get(key);

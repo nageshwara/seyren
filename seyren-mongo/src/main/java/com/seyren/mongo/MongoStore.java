@@ -306,7 +306,21 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore 
                 .withStart(start)
                 .withTotal(dbc.count());
     }
-    
+
+    @Override
+    public SeyrenResponse<Alert> getAlerts(String checkId, DateTime after) {
+        DBCursor dbc = getAlertsCollection().find(object("timestamp", object("$gt", after.getMillis())))
+                .sort(object("timestamp", -1));
+        List<Alert> alerts = new ArrayList<Alert>();
+        while (dbc.hasNext()) {
+            alerts.add(mapper.alertFrom(dbc.next()));
+        }
+        dbc.close();
+        return new SeyrenResponse<Alert>()
+                .withValues(alerts)
+                .withTotal(dbc.count());
+    }
+
     @Override
     public void deleteAlerts(String checkId, DateTime before) {
         DBObject query = object("checkId", checkId);
