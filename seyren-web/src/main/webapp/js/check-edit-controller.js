@@ -9,6 +9,8 @@
             target: null,
             warn: null,
             error: null,
+            alertThreshold: 0,
+            alertMaxLifeInDays: 0,
             previewImage: "./img/preview-nodata.png",
             enabled: true,
             live: false,

@@ -52,6 +52,7 @@ public class Check {
     private DateTime lastCheck;
     private List<Subscription> subscriptions = new ArrayList<Subscription>();
     private int alertThreshold;
+    private int alertMaxLifeInDays;
     
     public String getId() {
         return id;
@@ -246,6 +247,15 @@ public class Check {
 
     public Check withAlertThreshold(int alertThreshold) {
         this.alertThreshold = alertThreshold;
+        return this;
+    }
+
+    public int getAlertMaxLifeInDays() {
+        return alertMaxLifeInDays;
+    }
+
+    public Check withAlertMaxLifeInDays(int days) {
+        this.alertMaxLifeInDays = alertThreshold;
         return this;
     }
 }

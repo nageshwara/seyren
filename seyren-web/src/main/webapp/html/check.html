@@ -75,7 +75,13 @@
             <div class="form-group detail-form">
                 <label class="col-lg-2 control-label">Alert Threshold:</label>
                 <div class="col-lg-10">
-                    <p class="form-control-static"><input type="checkbox" ng-checked="check.allowNoData" ng-click="swapCheckAllowNoDataEnabled(check)" /> </p>
+                    <p class="form-control-static">{{check.alertThreshold}}</p>
+                </div>
+            </div>
+            <div class="form-group detail-form">
+                <label class="col-lg-2 control-label">Alert Max Life:</label>
+                <div class="col-lg-10">
+                    <p class="form-control-static">{{check.alertMaxLifeInDays}}</p>
                 </div>
             </div>
             <div class="form-group detail-form">

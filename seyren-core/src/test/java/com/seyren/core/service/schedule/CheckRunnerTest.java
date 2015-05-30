@@ -23,13 +23,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.seyren.core.domain.*;
+import com.seyren.core.domain.SeyrenResponse;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.common.base.Optional;
+import com.seyren.core.domain.Alert;
+import com.seyren.core.domain.AlertType;
+import com.seyren.core.domain.Check;
+import com.seyren.core.domain.Subscription;
+import com.seyren.core.domain.SubscriptionType;
 import com.google.common.collect.Lists;
 
 import com.seyren.core.exception.NotificationFailedException;

@@ -20,7 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.seyren.core.domain.*;
+import com.seyren.core.domain.Alert;
+import com.seyren.core.domain.AlertType;
+import com.seyren.core.domain.Check;
+import com.seyren.core.domain.SeyrenResponse;
+import com.seyren.core.domain.Subscription;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +154,10 @@ public class CheckRunner implements Runnable {
 
         } catch (Exception e) {
             LOGGER.warn("{} failed", check.getName(), e);
+        } finally {
+            if (check.getAlertMaxLifeInDays() > 0) {
+                alertsStore.deleteAlerts(check.getId(), DateTime.now().minusDays(check.getAlertMaxLifeInDays()));
+            }
         }
     }
 

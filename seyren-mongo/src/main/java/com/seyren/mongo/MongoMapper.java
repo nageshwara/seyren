@@ -49,6 +49,7 @@ public class MongoMapper {
         boolean live = getOptionalBoolean(dbo, "live", false);
         boolean allowNoData = getOptionalBoolean(dbo, "allowNoData", false);
         int alertThreshold = getOptionalInteger(dbo, "alertThreshold", 0);
+        int alertMaxLifeInDays = getOptionalInteger(dbo, "alertMaxLifeInDays", 0);
         AlertType state = AlertType.valueOf(getString(dbo, "state"));
         DateTime lastCheck = getDateTime(dbo, "lastCheck");
         List<Subscription> subscriptions = new ArrayList<Subscription>();
@@ -66,6 +67,7 @@ public class MongoMapper {
                 .withWarn(warn)
                 .withError(error)
                 .withAlertThreshold(alertThreshold)
+                .withAlertMaxLifeInDays(alertMaxLifeInDays)
                 .withEnabled(enabled)
                 .withLive(live)
                 .withAllowNoData(allowNoData)
@@ -156,6 +158,7 @@ public class MongoMapper {
         map.put("from", check.getFrom());
         map.put("until", check.getUntil());
         map.put("alertThreshold", check.getAlertThreshold());
+        map.put("alertMaxLifeInDays", check.getAlertMaxLifeInDays());
         if (check.getWarn() != null) {
             map.put("warn", check.getWarn().toPlainString());
         }
